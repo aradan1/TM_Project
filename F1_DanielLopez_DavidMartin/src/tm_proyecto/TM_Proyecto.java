@@ -5,6 +5,7 @@
  */
 package tm_proyecto;
 
+import com.beust.jcommander.Parameter;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -15,6 +16,35 @@ import java.util.ArrayList;
  * @author Daniel
  */
 public class TM_Proyecto {
+
+    
+    @Parameter(names={"--input", "-i"})
+    int input;
+    @Parameter(names={"--output", "-o"})
+    int output;
+    @Parameter(names={"--encode", "-e"})
+    int encode;
+    @Parameter(names={"--decode", "-d"})
+    int decode;
+    @Parameter(names={"--fps"})
+    int fps;
+    @Parameter(names={"--binarization"})
+    int binarization;
+    @Parameter(names={"--negative"})
+    int negative;
+    @Parameter(names={"--averaging"})
+    int averaging;
+    @Parameter(names={"--nTiles"})
+    int nTiles; // --nTiles <value,...>
+    @Parameter(names={"--seekRange"})
+    int seekRange;
+    @Parameter(names={"--GOP"})
+    int GOP;
+    @Parameter(names={"--quality"})
+    int quality;
+    @Parameter(names={"--batch", "-b"})
+    int batch;
+
 
     /**
      * @param args the command line arguments
