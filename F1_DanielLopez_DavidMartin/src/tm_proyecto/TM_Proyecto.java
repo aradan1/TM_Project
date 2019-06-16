@@ -6,6 +6,7 @@
 package tm_proyecto;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.JCommander;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -15,43 +16,50 @@ import java.util.ArrayList;
  *
  * @author Daniel
  */
-public class TM_Proyecto {
 
-    
-    @Parameter(names={"--input", "-i"})
-    int input;
+class Arguments {
+   @Parameter(names={"--input", "-i"})
+    static int input;
     @Parameter(names={"--output", "-o"})
-    int output;
+    static int output;
     @Parameter(names={"--encode", "-e"})
-    int encode;
+    static int encode;
     @Parameter(names={"--decode", "-d"})
-    int decode;
+    static int decode;
     @Parameter(names={"--fps"})
-    int fps;
+    static int fps;
     @Parameter(names={"--binarization"})
-    int binarization;
+    static int binarization;
     @Parameter(names={"--negative"})
-    int negative;
+    static int negative;
     @Parameter(names={"--averaging"})
-    int averaging;
+    static int averaging;
     @Parameter(names={"--nTiles"})
-    int nTiles; // --nTiles <value,...>
+    static int nTiles; // --nTiles <value,...>
     @Parameter(names={"--seekRange"})
-    int seekRange;
+    static int seekRange;
     @Parameter(names={"--GOP"})
-    int GOP;
+    static int GOP;
     @Parameter(names={"--quality"})
-    int quality;
+    static int quality;
     @Parameter(names={"--batch", "-b"})
-    int batch;
+    static int batch;
+    
+}
 
+public class TM_Proyecto {
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+            .addObject(arguments)
+            .build()
+            .parse(args);
         
-        
+        System.out.printf("%d %d", arguments.input, arguments.output);
         try {
             
            ArrayList<BufferedImage> images = ZipManager.extractImagesZip("Cubo.zip");
