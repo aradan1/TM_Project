@@ -30,7 +30,7 @@ public class ZipManager {
     public static ArrayList<BufferedImage> extractImagesZip(String zip) throws FileNotFoundException, IOException{
         
         ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
-        
+        File metadatos;
         FileInputStream fileInputStream = new FileInputStream(zip);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
         ZipInputStream zin = new ZipInputStream(bufferedInputStream);
@@ -44,8 +44,13 @@ public class ZipManager {
                     out.write(buffer, 0, len);
                 }
                 out.close();
+                
                 BufferedImage image = ImageIO.read(file);
-                images.add(image);
+                if(image == null){
+                    metadatos = file;
+                }else{
+                    images.add(image);
+                }
         }
         zin.close();
         bufferedInputStream.close();

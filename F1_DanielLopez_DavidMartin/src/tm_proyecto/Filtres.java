@@ -16,7 +16,7 @@ import java.awt.image.WritableRaster;
 public class Filtres {
     
     
-    public static BufferedImage binary(BufferedImage image){
+    public static BufferedImage binary(BufferedImage image, int thresh){
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
@@ -30,7 +30,7 @@ public class Filtres {
                 int g = (p>>8)&0xff;
                 int b = p&0xff;
                 int grey = (r+g+b)/3;
-                if(grey>60){// 127 = 255/2
+                if(grey>thresh){// 127 = 255/2
                     p = (a<<24) | (255<<16) | (255<<8) | 255;
                 }else{
                     p = (a<<24) | (0<<16) | (0<<8) | 0;
@@ -68,29 +68,31 @@ public class Filtres {
     
     
 // matrix 3x3
-    public static BufferedImage averaging(BufferedImage image){
+    public static BufferedImage averaging(BufferedImage image, int boundary){
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
         BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-        
+        int bUp = (boundary-1)/2;
+        int bDown = (boundary)/2;
         for(int y =0; y< image.getHeight(); y++){
             for(int x =0; x< image.getWidth(); x++){
-                int x1=x-1;
-                int x2=3;
-                int y1=y-1;
-                int y2=3;
+                int x1=x-bUp;
+                int y1=y-bUp;
+                
+                int x2=x+bDown;
+                int y2=y+bDown;
                 
                 if(x1<0)
                     x1=0;
                 if(y1<0)
                     y1=0;
-                if((x2+x1)>= image.getWidth())
-                    x2=image.getWidth() -x1 -1;
-                if((y2+y1)>= image.getHeight())
-                    y2=image.getHeight() -y1 -1;
+                if(x2>= image.getWidth())
+                    x2=image.getWidth() -1;
+                if(y2>= image.getHeight())
+                    y2=image.getHeight() -1;
                 
-                int p = computeNearAverage(image.getSubimage(x1, y1, x2, y2));
+                int p = computeNearAverage(image.getSubimage(x1, y1, x2-x1, y2-y1));
                 result.setRGB(x, y, p);
             }
         }

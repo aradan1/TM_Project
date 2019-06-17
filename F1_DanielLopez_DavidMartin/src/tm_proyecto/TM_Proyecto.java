@@ -21,7 +21,7 @@ class Args {
    @Parameter(names={"--input", "-i"}, required = true)
     static String input;
     @Parameter(names={"--output", "-o"})
-    static String output = "test";
+    static String output = "output.xdxd";
     @Parameter(names={"--encode", "-e"})
     static boolean encode = false;
     @Parameter(names={"--decode", "-d"})
@@ -56,24 +56,26 @@ public class TM_Proyecto {
         Args args = new Args();
         JCommander.newBuilder().addObject(args).build().parse(argv);
         
-        System.out.printf("%d %d", args.input, args.output);
+        System.out.printf("%s %s", args.input, args.output);
         
         try {
             
-           ArrayList<BufferedImage> images = ZipManager.extractImagesZip("Cubo.zip");
-           ArrayList<BufferedImage> negative = new ArrayList<>();
-           ArrayList<BufferedImage> binary = new ArrayList<>();
-           ArrayList<BufferedImage> average = new ArrayList<>();
+           ArrayList<BufferedImage> images = ZipManager.extractImagesZip(args.input);
+           ArrayList<BufferedImage> output = new ArrayList<>();
            for(BufferedImage image: images){
-               negative.add(Filtres.negative(image));
-               binary.add(Filtres.binary(image));
-               average.add(Filtres.averaging(image));
+               if(args.binarization>-1)
+                   image = Filtres.binary(image, args.binarization);
+               if(args.negative)
+                   image = Filtres.negative(image);
+               if(args.averaging>0)
+                   image = Filtres.averaging(image, args.averaging);
                
+               output.add(image);
            }    
-           Reproductor.reproducirImagenes(images, 60);
-           Reproductor.reproducirImagenes(negative, 60);
-           Reproductor.reproducirImagenes(binary, 60);
-           Reproductor.reproducirImagenes(average, 60);
+           
+           if(!args.batch){
+                Reproductor.reproducirImagenes(output, args.fps);
+           }
            
            ZipManager.unzipTo("Cubo.zip", "prueba");
             
