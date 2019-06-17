@@ -9,6 +9,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 
+/**
+ * 
+ * Crea un panel en el que mostrar las imagenes como vídeo
+ */
 public class Visor extends JFrame {
 
         private BufferedImage imagen;
@@ -23,6 +27,9 @@ public class Visor extends JFrame {
 
         }
 
+        /**
+         * Actualiza la imagen, se llama en cada frame
+         */
         public void changeFrame(){
 
                 if (imagen != null) {
@@ -33,6 +40,10 @@ public class Visor extends JFrame {
                 this.show();
         }
         
+        /**
+         * Cambia la imagen
+         * @param imagen 
+         */
         public void setImage(BufferedImage imagen){
             this.imagen = imagen;
         }
