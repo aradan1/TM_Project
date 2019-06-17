@@ -78,7 +78,8 @@ public class TM_Proyecto {
                 Reproductor.reproducirImagenes(output, args.fps);
            }
            
-           ZipManager.imagesToFolder(output, "test2");
+           //ZipManager.imagesToFolder(output, "test2");
+           ZipManager.imagesToZip(output, "test2.zip");
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

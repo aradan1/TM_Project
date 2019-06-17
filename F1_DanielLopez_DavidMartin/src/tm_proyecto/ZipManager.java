@@ -7,6 +7,7 @@ package tm_proyecto;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 
 /**
@@ -26,9 +28,9 @@ import javax.imageio.ImageIO;
  * @author Daniel
  */
 public class ZipManager {
-    
+
     public static ArrayList<BufferedImage> extractImagesZip(String zip) throws FileNotFoundException, IOException{
-        
+
         ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
         File metadatos;
         FileInputStream fileInputStream = new FileInputStream(zip);
@@ -44,7 +46,7 @@ public class ZipManager {
                     out.write(buffer, 0, len);
                 }
                 out.close();
-                
+
                 BufferedImage image = ImageIO.read(file);
                 if(image == null){
                     metadatos = file;
@@ -55,18 +57,18 @@ public class ZipManager {
         zin.close();
         bufferedInputStream.close();
         fileInputStream.close();
-        
+
         return images;
     }
-    
-    
+
+
     public static void unzipTo(String zip, String folder) throws IOException{
-        
+
         if(!(new File(folder).exists())){
                 FileSystem fileSystem = FileSystems.getDefault();
                 Files.createDirectory(fileSystem.getPath(folder));
         }
-        
+
         FileInputStream fileInputStream = new FileInputStream(zip);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
         ZipInputStream zin = new ZipInputStream(bufferedInputStream);
@@ -85,26 +87,51 @@ public class ZipManager {
                 out = new FileOutputStream(file);
                 ImageIO.write(image, "jpeg", out);
                 out.close();
-                
+
         }
         zin.close();
         bufferedInputStream.close();
         fileInputStream.close();
     }
     
-     public static void imagesToFolder(ArrayList<BufferedImage> images, String folder) throws IOException{
-         if(!(new File(folder).exists())){
+    public static void imagesToZip(ArrayList<BufferedImage> images, String zipName) throws IOException{
+        
+        File zipFile = new File(zipName);
+        try ( //images
+                FileOutputStream fos = new FileOutputStream(zipFile); 
+                BufferedOutputStream bos = new BufferedOutputStream(fos)){
+        
+            try (ZipOutputStream zos = new ZipOutputStream(bos)){
+                
+                int i = 0;
+                for(BufferedImage image : images){
+                    
+                    zos.putNextEntry(new ZipEntry(i+".jpeg"));
+                    ImageIO.write(image, "jpeg", zos);
+                    
+                    zos.closeEntry();
+                    i++;
+                }
+                zos.close();
+            }
+        }
+        
+           
+    }
+
+    public static void imagesToFolder(ArrayList<BufferedImage> images, String folder) throws IOException{
+        if(!(new File(folder).exists())){
                 FileSystem fileSystem = FileSystems.getDefault();
                 Files.createDirectory(fileSystem.getPath(folder));
         }
-         int i = 0;
-         for(BufferedImage image : images){
+        int i = 0;
+        for(BufferedImage image : images){
                 File file = new File(folder+"/"+i+".jpeg");
                 OutputStream out = new FileOutputStream(file);
                 ImageIO.write(image, "jpeg", out);
                 out.close();
                 i++;
-         }
-     }
-    
+        }
+    }
+
 }
