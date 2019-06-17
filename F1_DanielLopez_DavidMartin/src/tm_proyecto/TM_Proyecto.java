@@ -69,7 +69,8 @@ public class TM_Proyecto {
                    image = Filtres.negative(image);
                if(args.averaging>0)
                    image = Filtres.averaging(image, args.averaging);
-               
+               if(output.size()>0)
+                    image = Filtres.testPrev(image, output.get(output.size()-1), 30);
                output.add(image);
            }    
            
@@ -77,7 +78,7 @@ public class TM_Proyecto {
                 Reproductor.reproducirImagenes(output, args.fps);
            }
            
-           ZipManager.unzipTo("Cubo.zip", "prueba");
+           ZipManager.imagesToFolder(output, "test2");
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

@@ -92,4 +92,19 @@ public class ZipManager {
         fileInputStream.close();
     }
     
+     public static void imagesToFolder(ArrayList<BufferedImage> images, String folder) throws IOException{
+         if(!(new File(folder).exists())){
+                FileSystem fileSystem = FileSystems.getDefault();
+                Files.createDirectory(fileSystem.getPath(folder));
+        }
+         int i = 0;
+         for(BufferedImage image : images){
+                File file = new File(folder+"/"+i+".jpeg");
+                OutputStream out = new FileOutputStream(file);
+                ImageIO.write(image, "jpeg", out);
+                out.close();
+                i++;
+         }
+     }
+    
 }

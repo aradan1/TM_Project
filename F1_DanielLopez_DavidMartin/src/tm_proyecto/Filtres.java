@@ -123,5 +123,28 @@ public class Filtres {
         
         return ((avgA<<24) | (avgR<<16) | (avgG<<8) | avgB);
     }
+    
+    public static BufferedImage testPrev(BufferedImage image, BufferedImage reference, int threshold){
+        ColorModel cm = image.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = image.copyData(null);
+        BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+        for(int x=0; x< image.getWidth();x++){
+            for(int y=0; y<image.getHeight(); y++){
+                int p = image.getRGB(x,y);
+                int a = Math.abs((p>>24)&0xff- (reference.getRGB(x,y)>>24)&0xff);
+                int r = Math.abs((p>>16)&0xff- (reference.getRGB(x,y)>>16)&0xff);
+                int g = Math.abs((p>>8)&0xff- (reference.getRGB(x,y)>>8)&0xff);
+                int b = Math.abs(p&0xff- (reference.getRGB(x,y))&0xff);
+                if(a+r+g+b<threshold){
+                    p = ((p>>24)&0xff) | (0<<16) | (255<<8) | 255;
+                    result.setRGB(x, y, p);
+                }
+            }
+        }
+        
+        
+        return result;
+    }
         
 }
