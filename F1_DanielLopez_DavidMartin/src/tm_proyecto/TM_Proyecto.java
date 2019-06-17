@@ -17,49 +17,47 @@ import java.util.ArrayList;
  * @author Daniel
  */
 
-class Arguments {
-   @Parameter(names={"--input", "-i"})
-    static int input;
+class Args {
+   @Parameter(names={"--input", "-i"}, required = true)
+    static String input;
     @Parameter(names={"--output", "-o"})
-    static int output;
+    static String output = "test";
     @Parameter(names={"--encode", "-e"})
-    static int encode;
+    static boolean encode = false;
     @Parameter(names={"--decode", "-d"})
-    static int decode;
+    static boolean decode = false;
     @Parameter(names={"--fps"})
-    static int fps;
+    static int fps = 30;
     @Parameter(names={"--binarization"})
-    static int binarization;
+    static int binarization = -1;
     @Parameter(names={"--negative"})
-    static int negative;
+    static boolean negative = false;
     @Parameter(names={"--averaging"})
-    static int averaging;
+    static int averaging = -1;
     @Parameter(names={"--nTiles"})
-    static int nTiles; // --nTiles <value,...>
+    static int nTiles; // --nTiles <num tesseles, nColumnes, nFiles, ampleTessela, altTessela>
     @Parameter(names={"--seekRange"})
-    static int seekRange;
+    static int seekRange = -1;
     @Parameter(names={"--GOP"})
-    static int GOP;
+    static int GOP = 3;
     @Parameter(names={"--quality"})
-    static int quality;
+    static int quality = 10;
     @Parameter(names={"--batch", "-b"})
-    static int batch;
+    static boolean batch = false;
     
 }
 
 public class TM_Proyecto {
 
     /**
-     * @param args the command line arguments
+     * @param argv the command line arguments
      */
-    public static void main(String[] args) {
-        Arguments arguments = new Arguments();
-        JCommander.newBuilder()
-            .addObject(arguments)
-            .build()
-            .parse(args);
+    public static void main(String[] argv) {
+        Args args = new Args();
+        JCommander.newBuilder().addObject(args).build().parse(argv);
         
-        System.out.printf("%d %d", arguments.input, arguments.output);
+        System.out.printf("%d %d", args.input, args.output);
+        
         try {
             
            ArrayList<BufferedImage> images = ZipManager.extractImagesZip("Cubo.zip");
