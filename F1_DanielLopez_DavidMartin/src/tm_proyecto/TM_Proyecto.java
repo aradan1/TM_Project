@@ -37,7 +37,7 @@ class Args {
     @Parameter(names={"--nTiles"})
     static int nTiles=20; // --nTiles <num tesseles, nColumnes, nFiles, ampleTessela, altTessela>
     @Parameter(names={"--seekRange"})
-    static int seekRange = 1;
+    static int seekRange =1;
     @Parameter(names={"--GOP"})
     static int GOP = 5;
     @Parameter(names={"--quality"})
@@ -56,7 +56,7 @@ public class TM_Proyecto {
         Args args = new Args();
         JCommander.newBuilder().addObject(args).build().parse(argv);
         
-        System.out.printf("%s %s", args.input, args.output);
+        System.out.printf("%s %s\n", args.input, args.output);
         
         try {
             
@@ -78,7 +78,7 @@ public class TM_Proyecto {
            //System.out.println(output.size());
            for(int i = output.size()-1; i>0; i--){
                if(args.GOP*(i/args.GOP)!=i){
-                    meta+=""+i+"to"+(i-1)+Filtres.blockSearch(output.get(i), output.get(i-1), args.quality, args.nTiles, args.seekRange)+"#\n";
+                    meta+=""+i+"to"+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), args.quality, args.nTiles, args.seekRange)+"#\n";
                }
            }
            System.out.println(meta);
