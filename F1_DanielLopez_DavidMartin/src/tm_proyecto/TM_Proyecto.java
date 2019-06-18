@@ -74,18 +74,28 @@ public class TM_Proyecto {
                output.add(image);
            }
            
-           /////////////     NO CONSEGUIMOS QUE FUNCIONE
+           /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
+           if(Args.encode){
+                String meta="";
+                //System.out.println(output.size());
+                for(int i = output.size()-1; i>0; i--){
+                    if(Args.GOP*(i/Args.GOP)!=i){
+                         meta+=""+i+" "+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
+                    }
+                }
 
-           String meta="";
-           //System.out.println(output.size());
-           for(int i = output.size()-1; i>0; i--){
-               if(Args.GOP*(i/Args.GOP)!=i){
-                    meta+=""+i+"to"+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
-               }
+                String save = ZipManager.string2ASCIIbin(new StringBuffer(meta)).toString();
+                LZ77 lz = new LZ77(2^10,2^8);
+                String toFile = lz.comprimirSinFlag(save);
+           
            }
-           System.out.println(meta);
-           System.out.println("done");
-
+           
+           if(Args.decode){
+               String fromFile = "";
+               LZ77 lz = new LZ77(2^10,2^8);
+               String decompress = lz.descomprimirSinFlag(fromFile);
+               String recover = ZipManager.ASCIIbin2string(new StringBuffer(decompress)).toString();
+           }
            
            if(!Args.batch){
                 Reproductor.reproducirImagenes(output, Args.fps);

@@ -112,9 +112,8 @@ public class MotionEstimation {
         int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
 
         if((value < threshold) && (timeout<100)){
-            result+=""+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getX()+"%";
+            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getX();
         }
-        System.out.println("333");
         return result;
     }
     
