@@ -98,13 +98,23 @@ public class MotionEstimation {
     
     private static String motionEstimation(BufferedImage tile, BufferedImage reference, int threshold, Tessela coords, int seekRange){
         String result = "";
-        Tessela temp;
+        Tessela prev = null;
         
-        temp = checkNearTiles(tile, reference, coords, seekRange);
-        
-        while(temp.row!=seekRange || temp.col!=seekRange){
+        // Compute large diamond
+        Tessela temp = minLargeDiamond(tile, coords, seekRange);
+        while(prev != temp){
+            prev = temp;
+            temp = minLargeDiamond(tile, prev, seekRange);
             
-            temp=checkNearTiles(tile, reference, temp, seekRange);
+        }
+        
+        // Compute little diamond
+        temp = minLittleDiamond(tile, coords, seekRange);
+        temp = prev;
+        while(prev != temp){
+            prev = temp;
+            temp = minLittleDiamond(tile, prev, seekRange);
+            
         }
         
         int value = tilesMatch(tile, reference.getSubimage(temp.p.x, temp.p.y, temp.w, temp.h));
@@ -172,7 +182,7 @@ public class MotionEstimation {
         return value;
     }
     
-    public Tessela minLargeDiamond(BufferedImage image, Tessela t, int threshold, int seekRange){
+    public static Tessela minLargeDiamond(BufferedImage image, Tessela t, int seekRange){
 
         Map<Tessela, Integer> largeDiamond = new HashMap<>();
         BufferedImage temp;
@@ -182,74 +192,91 @@ public class MotionEstimation {
         int sy = seekRange*t.h;
         // X+2S Y
         tesTemp = new Tessela(new Pair(t.p.x+2*sx, t.p.y), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X-2S Y
         tesTemp = new Tessela(new Pair(t.p.x-2*sx, t.p.y), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
 
         // X Y+2S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y+2*sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X Y-2S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y-2*sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X+S Y+S
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y+sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X-S Y-S
         tesTemp = new Tessela(new Pair(t.p.x-sx, t.p.y-sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X-S Y+S
         tesTemp = new Tessela(new Pair(t.p.x-sx, t.p.y+sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
 
         // X+S Y-S
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y-sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        largeDiamond.put(tesTemp, calc);
-
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            largeDiamond.put(tesTemp, calc);
+        }
         // Center xy as first min value
         temp = image.getSubimage(t.p.x, t.p.y, t.w, t.h);
         Tessela minTessela = t;
         int minValue = tilesMatch(image, temp);
-
+        
+        largeDiamond.put(minTessela, minValue);
+        
         // Get minimum value
         for(Map.Entry<Tessela, Integer> entry : largeDiamond.entrySet()) {
             Tessela key = entry.getKey();
             int value = entry.getValue();
-
             if (value < minValue){
                 minValue = value;
                 minTessela = key;
             }
+            System.out.println("2");
         }
 
         return minTessela;
     }
 
 
-    public Tessela minLittleDiamond(BufferedImage image, Tessela t, int threshold, int seekRange){
+    public static Tessela minLittleDiamond(BufferedImage image, Tessela t, int seekRange){
         Map<Tessela, Integer> littleDiamond = new HashMap<>();
         BufferedImage temp;
         int calc;
@@ -258,28 +285,36 @@ public class MotionEstimation {
         int sy = (seekRange/2)*t.h;
         // X+S Y
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        littleDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            littleDiamond.put(tesTemp, calc);
+        }
 
         // X-S Y
         tesTemp = new Tessela(new Pair(t.p.x-sx, t.p.y), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        littleDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            littleDiamond.put(tesTemp, calc);
+        }
 
 
         // X Y+S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y+sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        littleDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            littleDiamond.put(tesTemp, calc);
+        }
 
         // X Y-S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y-sy), t.w, t.h);
-        temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
-        calc = tilesMatch(image, temp);
-        littleDiamond.put(tesTemp, calc);
+        if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
+            temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
+            calc = tilesMatch(image, temp);
+            littleDiamond.put(tesTemp, calc);
+        }
 
 
 
@@ -287,6 +322,8 @@ public class MotionEstimation {
         temp = image.getSubimage(t.p.x, t.p.y, t.w, t.h);
         Tessela minTessela = t;
         int minValue = tilesMatch(image, temp);
+        
+        littleDiamond.put(minTessela, minValue);
 
         // Get minimum value
         for(Map.Entry<Tessela, Integer> entry : littleDiamond.entrySet()) {
