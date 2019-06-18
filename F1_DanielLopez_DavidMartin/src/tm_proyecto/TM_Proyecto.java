@@ -35,11 +35,11 @@ class Args {
     @Parameter(names={"--averaging"})
     static int averaging = -1;
     @Parameter(names={"--nTiles"})
-    static int nTiles; // --nTiles <num tesseles, nColumnes, nFiles, ampleTessela, altTessela>
+    static int nTiles=20; // --nTiles <num tesseles, nColumnes, nFiles, ampleTessela, altTessela>
     @Parameter(names={"--seekRange"})
-    static int seekRange = -1;
+    static int seekRange = 1;
     @Parameter(names={"--GOP"})
-    static int GOP = 3;
+    static int GOP = 5;
     @Parameter(names={"--quality"})
     static int quality = 10;
     @Parameter(names={"--batch", "-b"})
@@ -62,6 +62,7 @@ public class TM_Proyecto {
             
            ArrayList<BufferedImage> images = ZipManager.extractImagesZip(args.input);
            ArrayList<BufferedImage> output = new ArrayList<>();
+           
            for(BufferedImage image: images){
                if(args.binarization>-1)
                    image = Filtres.binary(image, args.binarization);
@@ -69,10 +70,19 @@ public class TM_Proyecto {
                    image = Filtres.negative(image);
                if(args.averaging>0)
                    image = Filtres.averaging(image, args.averaging);
-               if(output.size()>0)
-                    image = Filtres.testPrev(image, output.get(output.size()-1), 30);
+               
                output.add(image);
-           }    
+           }
+           
+           String meta="";
+           //System.out.println(output.size());
+           for(int i = output.size()-1; i>0; i--){
+               if(args.GOP*(i/args.GOP)!=i){
+                    meta+=""+i+"to"+(i-1)+Filtres.blockSearch(output.get(i), output.get(i-1), args.quality, args.nTiles, args.seekRange)+"#\n";
+               }
+           }
+           System.out.println(meta);
+           System.out.println("done");
            
            if(!args.batch){
                 Reproductor.reproducirImagenes(output, args.fps);
