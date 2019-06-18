@@ -141,6 +141,46 @@ public class ZipManager {
         
            
     }
+    
+    
+    public static void toZip(ArrayList<BufferedImage> images, String zipName, File metadata) throws IOException{
+        
+        File zipFile = new File(zipName);
+        try (
+                // Crea un file output stream y un buffered output stream
+                FileOutputStream fos = new FileOutputStream(zipFile); 
+                BufferedOutputStream bos = new BufferedOutputStream(fos)){
+        
+            try (ZipOutputStream zos = new ZipOutputStream(bos)){ // Intenta crear un zip output stream
+                
+                int i = 0;
+                for(BufferedImage image : images){     
+                    // Para cada imagen crea un zip entry i lo pone como next entry para añadirlo al zip
+                    zos.putNextEntry(new ZipEntry(i+".jpeg"));
+                    ImageIO.write(image, "jpeg", zos);  // Usamos la libreria ImageIO para escribir la imagen
+                    
+                    zos.closeEntry();
+                    i++;
+                }
+                
+                // Agregamos el archivo de metadatos
+                FileInputStream fis = new FileInputStream(metadata);
+                zos.putNextEntry(new ZipEntry("metadata"));
+                byte[] bytes = new byte[1024];
+		int length;
+		while ((length = fis.read(bytes)) >= 0) {
+			zos.write(bytes, 0, length);
+		}
+		zos.closeEntry();               
+                
+                zos.close();
+            }
+        }
+        
+           
+    }
+    
+    
 
     /**
      *  Recibe una lista serie de imagenes, crea una carpeta y las añade todas 
