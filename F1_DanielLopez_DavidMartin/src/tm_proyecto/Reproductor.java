@@ -12,18 +12,29 @@ import java.util.TimerTask;
 
 /**
  *
- * @author Daniel
+ * Controlador del reproductor de vídeo, 
+ * administra cuando tiene que cambiar los frames del visor
+ * y actualiza la imagen que tiene que mostrar
  */
 public class Reproductor {
     
     private static boolean next = true;
     
+    /**
+     * Recibe todas las imagenes y cuantos fps tendrá el video
+     * Crea un timer para poder administrar cada cuanto tiene que enviar un frame.
+     * Llamará a los métodos de la clase Visor para actualizar la imagen en cada frame
+     * @param images
+     * @param fps
+     * @throws InterruptedException 
+     */
     public static void reproducirImagenes(ArrayList<BufferedImage> images, int fps) throws InterruptedException{
         
-        Visor v = new Visor(); // Creamos la ventana vacia
+        Visor v = new Visor(); // Creamos la ventana vacía
         
         Timer timer = new Timer();
         
+        // TimerTask para controlar la velocidad de los frames
         TimerTask task = new TimerTask() {
             @Override
             public void run() {  
@@ -36,8 +47,9 @@ public class Reproductor {
         
         timer.schedule(task, 0, period);
         
+        // Para cada imagen, se esperará el tiempo de un frame y actualizará la imagen del visor
         for(BufferedImage image : images){
-            while(!next){Thread.sleep((long)0.001);}    // Un poco feo pero funciona
+            while(!next){Thread.sleep((long)0.001);}    
             v.setImage(image);
             v.changeFrame();
             Reproductor.next=false;
