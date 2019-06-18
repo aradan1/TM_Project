@@ -82,10 +82,10 @@ public class MotionEstimation {
         BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
         
         String dades = "";
-        int tileW= (image.getWidth()-1)/numtiles;
-        int tileH= (image.getHeight()-1)/numtiles;
-        for(int x=0; x+tileW< image.getWidth(); x+=tileW){
-            for(int y=0; y+tileH< image.getHeight(); y+=tileH){
+        int tileW= (image.getWidth())/numtiles;
+        int tileH= (image.getHeight())/numtiles;
+        for(int x=0; x+tileW< image.getWidth()+1; x+=tileW){
+            for(int y=0; y+tileH< image.getHeight()+1; y+=tileH){
                 
                 String temp = motionEstimation(result.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
                 
@@ -102,17 +102,20 @@ public class MotionEstimation {
         
         temp = checkNearTiles(tile, reference, coords, seekRange);
         
-        while(temp.row!=seekRange || temp.col!=seekRange){
+        int timeout = 0;
+        while((temp.row!=seekRange || temp.col!=seekRange) && (timeout<(seekRange*seekRange))){
+            
             
             temp=checkNearTiles(tile, reference, temp, seekRange);
+            timeout++;
         }
         
-        int value = tilesMatch(tile, reference.getSubimage(temp.p.x, temp.p.y, temp.w, temp.h));
+        int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
         
-        if(value < threshold){
+        if((value < threshold)&&(timeout<(seekRange*seekRange))){
             result+=""+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getX()+"%";
         }
-        System.out.println("333");
+        
         return result;
     }
     
@@ -125,18 +128,13 @@ public class MotionEstimation {
         int x = coords.getX()-(seekRange*coords.getW());
         int y = coords.getY()-(seekRange*coords.getH());
         
-       for(int i = 0; i < range; i++){
-           x+=(i*coords.getW());
-           
-        System.out.println(x+" "+coords.getW());
         
-           if(x>=0 && x+coords.getW()<reference.getWidth()){
+       for(int i = 0; i < range; i++){
+        
+           if(x>=0 && x+coords.getW()<=reference.getWidth()){
                
                 for(int j = 0; j < range; j++){
-                    y+=(j*coords.getH());
-                    if(y>=0 && y+coords.getH()<reference.getHeight()){
-                        
-                        System.out.println("LOL");
+                    if(y>=0 && y+coords.getH()<=reference.getHeight()){
                         
                          valueTemp=tilesMatch(image, reference.getSubimage(x, y, coords.getW(), coords.getH()));
                          if(best<0 || valueTemp<best){
@@ -148,8 +146,12 @@ public class MotionEstimation {
                              
                          }
                     }
+                    
+                    y+=(coords.getH());
                 }
            }
+           
+           x+=(coords.getW());
        }
         return result;
     }

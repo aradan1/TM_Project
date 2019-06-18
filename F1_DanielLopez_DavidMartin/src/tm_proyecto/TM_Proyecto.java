@@ -56,39 +56,43 @@ public class TM_Proyecto {
         Args args = new Args();
         JCommander.newBuilder().addObject(args).build().parse(argv);
         
-        System.out.printf("%s %s\n", args.input, args.output);
+        System.out.printf("%s %s\n", Args.input, Args.output);
         
         try {
             
-           ArrayList<BufferedImage> images = ZipManager.extractImagesZip(args.input);
+           ArrayList<BufferedImage> images = ZipManager.extractImagesZip(Args.input);
            ArrayList<BufferedImage> output = new ArrayList<>();
            
            for(BufferedImage image: images){
-               if(args.binarization>-1)
-                   image = Filtres.binary(image, args.binarization);
-               if(args.negative)
+               if(Args.binarization>-1)
+                   image = Filtres.binary(image, Args.binarization);
+               if(Args.negative)
                    image = Filtres.negative(image);
-               if(args.averaging>0)
-                   image = Filtres.averaging(image, args.averaging);
+               if(Args.averaging>0)
+                   image = Filtres.averaging(image, Args.averaging);
                
                output.add(image);
            }
            
+           /////////////     NO CONSEGUIMOS QUE FUNCIONE
+
            String meta="";
            //System.out.println(output.size());
            for(int i = output.size()-1; i>0; i--){
-               if(args.GOP*(i/args.GOP)!=i){
-                    meta+=""+i+"to"+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), args.quality, args.nTiles, args.seekRange)+"#\n";
+               if(Args.GOP*(i/Args.GOP)!=i){
+                    meta+=""+i+"to"+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
                }
            }
            System.out.println(meta);
            System.out.println("done");
+
            
-           if(!args.batch){
-                Reproductor.reproducirImagenes(output, args.fps);
+           if(!Args.batch){
+                Reproductor.reproducirImagenes(output, Args.fps);
            }
            
-           //ZipManager.imagesToFolder(output, "test2");
+           
+           
            ZipManager.imagesToZip(output, "test2.zip");
             
         } catch (Exception ex) {
