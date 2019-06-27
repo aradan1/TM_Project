@@ -74,27 +74,27 @@ public class TM_Proyecto {
                output.add(image);
            }
            
+           
+           String meta="";
+           for(int i = output.size()-1; i>0; i--){
+                if(Args.GOP*(i/Args.GOP)!=i){
+                     meta+=""+i+" "+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
+                     
+                    System.out.println("Imagen "+i+" completada");
+                }
+            }
+           
+           System.out.println(meta);
+           
            /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
            if(Args.encode){
-                String meta="";
-                //System.out.println(output.size());
-                for(int i = output.size()-1; i>0; i--){
-                    if(Args.GOP*(i/Args.GOP)!=i){
-                         meta+=""+i+" "+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
-                    }
-                }
 
-                String save = ZipManager.string2ASCIIbin(new StringBuffer(meta)).toString();
-                LZ77 lz = new LZ77(2^10,2^8);
-                String toFile = lz.comprimirSinFlag(save);
            
            }
            
            if(Args.decode){
-               String fromFile = "";
-               LZ77 lz = new LZ77(2^10,2^8);
-               String decompress = lz.descomprimirSinFlag(fromFile);
-               String recover = ZipManager.ASCIIbin2string(new StringBuffer(decompress)).toString();
+               
+               
            }
            
            if(!Args.batch){
@@ -104,6 +104,7 @@ public class TM_Proyecto {
            
            
            ZipManager.imagesToZip(output, "test2.zip");
+           System.out.println("Saved to test2.zip");
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

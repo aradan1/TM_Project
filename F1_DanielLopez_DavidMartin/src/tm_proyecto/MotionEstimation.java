@@ -77,10 +77,12 @@ class Tessela{
 public class MotionEstimation {
     
     public static String blockSearch(BufferedImage image, BufferedImage reference, int threshold, int numtiles, int seekRange){
+        /*
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
         BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+        */
         
         String dades = "";
         int tileW= (image.getWidth())/numtiles;
@@ -88,7 +90,40 @@ public class MotionEstimation {
         for(int x=0; x+tileW< image.getWidth()+1; x+=tileW){
             for(int y=0; y+tileH< image.getHeight()+1; y+=tileH){
                 
-                String temp = motionEstimation(result.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
+                String temp = motionEstimation(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
+                
+                if(!temp.isEmpty()){
+                    int tR=0;
+                    int tB=0;
+                    int tG=0;
+                    int tA=0;
+                    for(int j =y; j< y+tileH; j++){
+                        for(int i =x; i< x+tileW; i++){
+                            int p = image.getRGB(i,j);
+                            int a = (p>>24)&0xff;
+                            int r = (p>>16)&0xff;
+                            int g = (p>>8)&0xff;
+                            int b = p&0xff;
+                            tR+=r;
+                            tB+=b;
+                            tG+=g;
+                            tA+=a;
+                        }
+                    }
+                    tR/=(tileW*tileH);
+                    tB/=(tileW*tileH);
+                    tG/=(tileW*tileH);
+                    tA/=(tileW*tileH);
+                    
+                    int p= (tA<<24) | (tR<<16) | (tG<<8) | tB;
+                    //int p= (tA<<24) | (255<<16) | (255<<8) | 255;
+                    
+                    for(int j =y; j< y+tileH; j++){
+                        for(int i =x; i< x+tileW; i++){
+                            image.setRGB(i, j, p);
+                        }
+                    }
+                }
                 
                 dades+=temp;
             }
@@ -103,7 +138,7 @@ public class MotionEstimation {
 
         temp = checkNearTiles(tile, reference, coords, seekRange);
         int timeout = 0;
-        while((temp.row!=seekRange || temp.col!=seekRange) && (timeout<100)){
+        while((temp.row!=seekRange || temp.col!=seekRange) && (timeout<5)){
 
             temp=checkNearTiles(tile, reference, temp, seekRange);
             timeout++;
@@ -111,8 +146,9 @@ public class MotionEstimation {
 
         int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
 
-        if((value < threshold) && (timeout<100)){
-            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getX();
+        if(value < threshold){
+            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getY();
+            
         }
         return result;
     }
