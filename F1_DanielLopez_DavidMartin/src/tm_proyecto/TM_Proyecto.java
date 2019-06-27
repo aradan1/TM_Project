@@ -75,19 +75,24 @@ public class TM_Proyecto {
            
            // Imagenes sin comprimir directas en jpg
            ZipManager.imagesToZip(output, "test_no_encoded.zip");
+           System.out.println("Saved to test_no_encoded.zip");
            
            
            String meta="";
            for(int i = output.size()-1; i>0; i--){
                 if(Args.GOP*(i/Args.GOP)!=i){
-                     meta+=""+i+" "+(i-1)+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#\n";
+                    // estructura: num image+info tessela
+                     meta+=""+i+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#";
                      
                     System.out.println("Imagen "+i+" completada");
                 }
             }
            
-           System.out.println(meta);
            
+           ZipManager.stringToFile("data", meta);
+           String read = ZipManager.stringFromFile("data");
+           
+           System.out.println(meta.equals(read));
            /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
            if(Args.encode){
 
@@ -106,7 +111,7 @@ public class TM_Proyecto {
            
            
            ZipManager.imagesToZip(output, "test_encoded.zip");
-           System.out.println("Saved to test2.zip");
+           System.out.println("Saved to test_encoded.zip");
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
