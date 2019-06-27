@@ -8,6 +8,7 @@ package tm_proyecto;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.JCommander;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -59,8 +60,8 @@ public class TM_Proyecto {
         System.out.printf("%s %s\n", Args.input, Args.output);
         
         try {
-            
-           ArrayList<BufferedImage> images = ZipManager.extractImagesZip(Args.input);
+            ZipData data = ZipManager.extractImagesZip(Args.input);
+           ArrayList<BufferedImage> images = data.getImages();
            ArrayList<BufferedImage> output = new ArrayList<>();
            for(BufferedImage image: images){
                if(Args.binarization>-1)
@@ -74,7 +75,7 @@ public class TM_Proyecto {
            }
            
            // Imagenes sin comprimir directas en jpg
-           ZipManager.imagesToZip(output, "test_no_encoded.zip");
+           ZipManager.imagesToZip(output, "",  "test_no_encoded.zip");
            System.out.println("Saved to test_no_encoded.zip");
            
            
@@ -89,10 +90,6 @@ public class TM_Proyecto {
             }
            
            
-           ZipManager.stringToFile("data", meta);
-           String read = ZipManager.stringFromFile("data");
-           
-           System.out.println(meta.equals(read));
            /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
            if(Args.encode){
 
@@ -110,8 +107,11 @@ public class TM_Proyecto {
            
            
            
-           ZipManager.imagesToZip(output, "test_encoded.zip");
+           ZipManager.imagesToZip(output, meta, "test_encoded.zip");
            System.out.println("Saved to test_encoded.zip");
+           
+           data = ZipManager.extractImagesZip("test_encoded.zip");
+           System.out.println(data.getMetadata().equals(meta));
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

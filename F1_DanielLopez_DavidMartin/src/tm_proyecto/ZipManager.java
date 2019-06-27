@@ -23,6 +23,28 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 
+
+class ZipData{
+    
+    private ArrayList<BufferedImage> images;
+    private String metadata;
+    
+    ZipData(ArrayList<BufferedImage> i , String m){
+        this.images=i;
+        this.metadata=m;
+    }
+    
+    
+    public ArrayList<BufferedImage> getImages() {
+        return images;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+    
+}
+
 /**
  *
  * Clase que administra la creación y lectura de archivos zip
@@ -36,10 +58,10 @@ public class ZipManager {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    public static ArrayList<BufferedImage> extractImagesZip(String zip) throws FileNotFoundException, IOException{
+    public static ZipData extractImagesZip(String zip) throws FileNotFoundException, IOException{
 
         ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
-        File metadatos;
+        File metadatos = null;
         FileInputStream fileInputStream = new FileInputStream(zip);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
         ZipInputStream zin = new ZipInputStream(bufferedInputStream);
@@ -65,8 +87,11 @@ public class ZipManager {
         zin.close();
         bufferedInputStream.close();
         fileInputStream.close();
-
-        return images;
+        
+        if(metadatos==null){
+            return new ZipData(images,"") ;
+        }
+        return new ZipData(images,stringFromFile(metadatos)) ;
     }
 
 
@@ -113,10 +138,11 @@ public class ZipManager {
     /**
      * Añade las imagenes de la lista pasada por parámetro a un zip
      * @param images
+     * @param metadata
      * @param zipName
      * @throws IOException 
      */
-    public static void imagesToZip(ArrayList<BufferedImage> images, String zipName) throws IOException{
+    public static void imagesToZip(ArrayList<BufferedImage> images, String metadata, String zipName) throws IOException{
         
         File zipFile = new File(zipName);
         try (
@@ -134,6 +160,15 @@ public class ZipManager {
                     
                     zos.closeEntry();
                     i++;
+                }
+                // si hay metadata
+                if(!metadata.isEmpty()){
+                    // Añadimos el fichero con metadata
+                    byte[] strToBytes = metadata.getBytes();
+
+                    zos.putNextEntry(new ZipEntry("data"));
+                    zos.write(strToBytes);
+                    zos.closeEntry();
                 }
                 zos.close();
             }
@@ -200,6 +235,8 @@ public class ZipManager {
         }
     }
 
+    
+    
     public static void stringToFile(String file, String content) throws FileNotFoundException, IOException{
         FileOutputStream outputStream = new FileOutputStream(file);
         byte[] strToBytes = content.getBytes();
@@ -208,7 +245,7 @@ public class ZipManager {
         outputStream.close();
     }
     
-    public static String stringFromFile(String file) throws FileNotFoundException, IOException{
+    public static String stringFromFile(File file) throws FileNotFoundException, IOException{
         FileInputStream inputStream = new FileInputStream(file);
         String result = "";
         int temp;
