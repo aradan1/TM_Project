@@ -62,7 +62,6 @@ public class TM_Proyecto {
             
            ArrayList<BufferedImage> images = ZipManager.extractImagesZip(Args.input);
            ArrayList<BufferedImage> output = new ArrayList<>();
-           
            for(BufferedImage image: images){
                if(Args.binarization>-1)
                    image = Filtres.binary(image, Args.binarization);
@@ -73,6 +72,9 @@ public class TM_Proyecto {
                
                output.add(image);
            }
+           
+           // Imagenes sin comprimir directas en jpg
+           ZipManager.imagesToZip(output, "test_no_encoded.zip");
            
            
            String meta="";
@@ -103,7 +105,7 @@ public class TM_Proyecto {
            
            
            
-           ZipManager.imagesToZip(output, "test2.zip");
+           ZipManager.imagesToZip(output, "test_encoded.zip");
            System.out.println("Saved to test2.zip");
             
         } catch (Exception ex) {
