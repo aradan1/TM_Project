@@ -76,22 +76,25 @@ class Tessela{
 
 public class MotionEstimation {
     
-    public static String blockSearch(BufferedImage image, BufferedImage reference, int threshold, int numtiles, int seekRange){
+    public static String blockSearch(BufferedImage image, BufferedImage reference, int threshold, int numtiles, int seekRange, int mode){
         /*
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
         BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
         */
-        
+        String temp;
         String dades = "";
         int tileW= (image.getWidth())/numtiles;
         int tileH= (image.getHeight())/numtiles;
         for(int x=0; x+tileW< image.getWidth()+1; x+=tileW){
             for(int y=0; y+tileH< image.getHeight()+1; y+=tileH){
                 
-                //String temp = motionEstimation(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
-                String temp = motionEstimationDiam(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
+                if(mode==1){
+                        temp = motionEstimationDiam(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
+                }else{
+                        temp = motionEstimation(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
+                }
                 
                 if(!temp.isEmpty()){
                     int tR=0;
@@ -178,7 +181,7 @@ public class MotionEstimation {
         int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
         
         if((value < threshold)){
-            result+=""+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getX()+"%";
+            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getY();
         }
         
         return result;

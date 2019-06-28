@@ -59,6 +59,7 @@ public class TM_Proyecto {
         
         System.out.printf("%s %s\n", Args.input, Args.output);
         
+        
         try {
             ZipData data = ZipManager.extractImagesZip(Args.input);
            ArrayList<BufferedImage> images = data.getImages();
@@ -79,11 +80,13 @@ public class TM_Proyecto {
            System.out.println("Saved to test_no_encoded.zip");
            
            
+           int mode=1;
            String meta="";
+           
            for(int i = output.size()-1; i>0; i--){
                 if(Args.GOP*(i/Args.GOP)!=i){
                     // estructura: num image+info tessela
-                     meta+=""+i+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange)+"#";
+                     meta+=""+i+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange, mode)+"#";
                      
                     System.out.println("Imagen "+i+" completada");
                 }

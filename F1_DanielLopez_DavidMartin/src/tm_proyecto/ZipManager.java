@@ -68,7 +68,7 @@ public class ZipManager {
         ZipEntry ze = null;
         // Por cada item del zip
         while ((ze = zin.getNextEntry()) != null) {
-                File file = new File("tmp");
+                File file = File.createTempFile("tmp","");
                 OutputStream out = new FileOutputStream(file);
                 byte[] buffer = new byte[9000];
                 int len;
