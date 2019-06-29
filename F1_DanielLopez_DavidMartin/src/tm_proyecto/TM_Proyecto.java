@@ -36,13 +36,15 @@ class Args {
     @Parameter(names={"--averaging"})
     static int averaging = -1;
     @Parameter(names={"--nTiles"})
-    static int nTiles=20; // --nTiles <num tesseles, nColumnes, nFiles, ampleTessela, altTessela>
+    static int nTiles=20;
     @Parameter(names={"--seekRange"})
     static int seekRange =1;
     @Parameter(names={"--GOP"})
     static int GOP = 5;
     @Parameter(names={"--quality"})
     static int quality = 10;
+    @Parameter(names={"--mode"})
+    static int mode = 0;
     @Parameter(names={"--batch", "-b"})
     static boolean batch = false;
     
@@ -80,17 +82,9 @@ public class TM_Proyecto {
            System.out.println("Saved to test_no_encoded.zip");
            
            
-           int mode=1;
-           String meta="";
+           String meta=MotionEstimation.motionEncode(output);
            
-           for(int i = output.size()-1; i>0; i--){
-                if(Args.GOP*(i/Args.GOP)!=i){
-                    // estructura: num image+info tessela
-                     meta+=""+i+MotionEstimation.blockSearch(output.get(i), output.get(i-1), Args.quality, Args.nTiles, Args.seekRange, mode)+"#";
-                     
-                    System.out.println("Imagen "+i+" completada");
-                }
-            }
+           
            
            
            /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
@@ -116,6 +110,8 @@ public class TM_Proyecto {
            data = ZipManager.extractImagesZip("test_encoded.zip");
            System.out.println(data.getMetadata().equals(meta));
             
+           
+           
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }

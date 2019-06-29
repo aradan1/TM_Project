@@ -8,6 +8,7 @@ package tm_proyecto;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +76,32 @@ class Tessela{
 }
 
 public class MotionEstimation {
+    
+   public static void modionDecode(ArrayList<BufferedImage> images, String metadata){
+       // hay que leer el string char a char y recrear las imagenes originales, despues pasarle un filtro de suavizado (near average)
+   }
+    
+    public static String motionEncode(ArrayList<BufferedImage> images){
+        
+        String result="";
+        
+        
+        for(int i = images.size()-1; i>0; i--){
+            if(Args.GOP*(i/Args.GOP)!=i){
+                // estructura: num image+info tessela
+                result=""+i+blockSearch(images.get(i), images.get(i-1), Args.quality, Args.nTiles, Args.seekRange, Args.mode)+"#"+result;
+                     
+                System.out.println("Imagen "+i+" completada");
+            }
+        }
+        
+        
+        // Asumimos que todas las imagenes son del mismo tamaño
+        result=(images.get(0).getWidth()/Args.nTiles)+" "+(images.get(0).getHeight()/Args.nTiles)+"#"+result;
+        
+        return result;
+    } 
+    
     
     public static String blockSearch(BufferedImage image, BufferedImage reference, int threshold, int numtiles, int seekRange, int mode){
         /*
