@@ -267,20 +267,24 @@ public class MotionEstimation {
         String result = "";
         Tessela prev = coords;
         seekRange=2;
-        
+        Tessela temp;
         // Compute large diamond
-        Tessela temp = minLargeDiamond(tile, coords, seekRange);
-        while(!prev.equals(temp)){
-            prev = temp;
-            temp = minLargeDiamond(tile, prev, seekRange);
-            
+        while ((seekRange % 2) == 0){
+            temp = minLargeDiamond(tile, coords, seekRange);
+            while(!prev.equals(temp)){
+                prev = temp;
+                temp = minLargeDiamond(tile, prev, seekRange);
+
+            }
+            seekRange = seekRange/2;
         }
         // Compute little diamond
-        temp = minLittleDiamond(tile, coords, seekRange);
-        prev = coords;
+        // Prev is the result from the large diamond 
+        // or the initial block if the seekRange is 1
+        temp = minLittleDiamond(tile, prev);
         while(prev != temp){
             prev = temp;
-            temp = minLittleDiamond(tile, prev, seekRange);
+            temp = minLittleDiamond(tile, prev);
             
         }
         
@@ -445,13 +449,13 @@ public class MotionEstimation {
     }
 
 
-    public static Tessela minLittleDiamond(BufferedImage image, Tessela t, int seekRange){
+    public static Tessela minLittleDiamond(BufferedImage image, Tessela t){
         Map<Tessela, Integer> littleDiamond = new HashMap<>();
         BufferedImage temp;
         int calc;
         Tessela tesTemp;
-        int sx = (seekRange/2)*t.w;
-        int sy = (seekRange/2)*t.h;
+        int sx = t.w;
+        int sy = t.h;
         // X+S Y
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y), t.w, t.h);
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){

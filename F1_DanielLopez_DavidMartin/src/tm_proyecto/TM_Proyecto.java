@@ -87,7 +87,7 @@ public class TM_Proyecto {
            
            
            
-           /////////////     NO CONSEGUIMOS QUE FUNCIONE BIEN
+           
            if(Args.encode){
 
            
