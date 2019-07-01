@@ -270,7 +270,7 @@ public class MotionEstimation {
         Tessela temp;
         // Compute large diamond
         while ((seekRange % 2) == 0){
-            temp = minLargeDiamond(tile, coords, seekRange);
+            temp = minLargeDiamond(tile, prev, seekRange);
             while(!prev.equals(temp)){
                 prev = temp;
                 temp = minLargeDiamond(tile, prev, seekRange);
