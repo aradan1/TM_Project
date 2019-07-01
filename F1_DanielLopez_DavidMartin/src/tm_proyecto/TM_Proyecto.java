@@ -80,10 +80,10 @@ public class TM_Proyecto {
            // Imagenes sin comprimir directas en jpg
            ZipManager.imagesToZip(output, "",  "test_no_encoded.zip");
            System.out.println("Saved to test_no_encoded.zip");
+           System.out.printf("%.3f MB\n",new File("test_no_encoded.zip").length()/1000000f);
            
            
            String meta=MotionEstimation.motionEncode(output);
-           
            
            
            
@@ -107,10 +107,15 @@ public class TM_Proyecto {
            ZipManager.imagesToZip(output, meta, "test_encoded.zip");
            System.out.println("Saved to test_encoded.zip");
            
+           System.out.printf("%.3f MB\n", new File("test_encoded.zip").length()/1000000f);
+           
            data = ZipManager.extractImagesZip("test_encoded.zip");
            System.out.println(data.getMetadata().equals(meta));
             
+           MotionEstimation.motionDecode(data.getImages(), data.getMetadata());
+           Reproductor.reproducirImagenes(data.getImages(), Args.fps);
            
+           ZipManager.imagesToZip(data.getImages(), data.getMetadata(), "decoded.zip");
            
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

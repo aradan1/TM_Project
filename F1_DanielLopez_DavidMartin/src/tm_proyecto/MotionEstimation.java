@@ -77,8 +77,85 @@ class Tessela{
 
 public class MotionEstimation {
     
-   public static void modionDecode(ArrayList<BufferedImage> images, String metadata){
+   public static void motionDecode(ArrayList<BufferedImage> images, String metadata){
+       char c;
+       int i = 0;
+       c = metadata.charAt(i);
+       
+       int width=-1;
+       int height=-1;
+       String temp="";
+       
+       while(c != '#'){
+           if(c == ' '){
+               width=Integer.parseInt(temp);
+               temp = "";
+           }else{
+               temp+=c;
+           }
+           i++;
+           c=metadata.charAt(i);
+       }
+       height = Integer.parseInt(temp);
+       
+       
+       // donde se copia
+       Pair copy = new Pair(0,0);
+       
+       // donde se pega
+       Pair paste = new Pair(0,0);
+       
+       if(width == -1 || height == -1){
+           System.out.println("Error: "+width+"x"+height);
+           return ;
+       }
+       
+       temp = "";
+       
+       // la pagina 0 nunca estara codificada
+       int page=1;
+       
+        i++;
        // hay que leer el string char a char y recrear las imagenes originales, despues pasarle un filtro de suavizado (near average)
+       while(i < metadata.length() && page<images.size()){
+           
+            c=metadata.charAt(i);
+            
+           // Siguiente pagina
+            if(c=='#'){
+                System.out.println("Image "+page+" decoded");
+                page++;
+            }
+            // 1r valor, x de la tesela cambiada
+            else if(c=='a'){
+                paste.x = Integer.parseInt(temp);
+                temp = "";
+            // 2o valor, y de la tesela cambiada
+            }else if(c=='b'){
+                paste.y = Integer.parseInt(temp);
+                temp = "";
+            // 3r valor, x de la tesela referencia
+            }else if(c=='c'){
+                copy.x = Integer.parseInt(temp);
+                temp = "";
+            
+            // Ultimo numero entrado, recreamos tesela
+            }else if(c=='d'){
+                copy.y = Integer.parseInt(temp);
+                temp = "";
+                
+                for(int x = 0; x<width; x++){
+                    for(int y = 0; y<height; y++){
+                        // tenemos las coordenadas, hay que meter la tessela de page-1 (copy) en page (paste)
+                        images.get(page).setRGB(paste.x+x, paste.y+y, images.get(page-1).getRGB(copy.x+x, copy.y+y));
+                    }
+                }
+            }else{
+                temp+=c;
+            }
+            
+            i++;
+       }
    }
     
     public static String motionEncode(ArrayList<BufferedImage> images){
@@ -87,12 +164,14 @@ public class MotionEstimation {
         
         
         for(int i = images.size()-1; i>0; i--){
-            if(Args.GOP*(i/Args.GOP)!=i){
-                // estructura: num image+info tessela
-                result=""+i+blockSearch(images.get(i), images.get(i-1), Args.quality, Args.nTiles, Args.seekRange, Args.mode)+"#"+result;
-                     
-                System.out.println("Imagen "+i+" completada");
+            String temp = "#";
+            if(i%Args.GOP != 0){
+                temp=blockSearch(images.get(i), images.get(i-1), Args.quality, Args.nTiles, Args.seekRange, Args.mode)+temp;
+                System.out.println("Image "+i+" encoded");
             }
+                // estructura: num image+info tessela
+                result=""+temp+result;
+                     
         }
         
         
@@ -178,7 +257,7 @@ public class MotionEstimation {
         int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
 
         if(value < threshold){
-            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getY();
+            result+=""+coords.getX()+"a"+coords.getY()+"b"+temp.getX()+"c"+temp.getY()+"d";
             
         }
         return result;
@@ -208,7 +287,7 @@ public class MotionEstimation {
         int value = tilesMatch(tile, reference.getSubimage(temp.getX(), temp.getY(), temp.getW(), temp.getH()));
         
         if((value < threshold)){
-            result+=" "+coords.getX()+" "+coords.getY()+" "+temp.getX()+" "+temp.getY();
+            result+=""+coords.getX()+"a"+coords.getY()+"b"+temp.getX()+"c"+temp.getY()+"d";
         }
         
         return result;
