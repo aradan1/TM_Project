@@ -123,6 +123,7 @@ public class MotionEstimation {
             
            // Siguiente pagina
             if(c=='#'){
+                //images.set(page, Filtres.averaging(images.get(page), 2));
                 System.out.println("Image "+page+" decoded");
                 page++;
             }
@@ -173,7 +174,6 @@ public class MotionEstimation {
                 result=""+temp+result;
                      
         }
-        
         
         // Asumimos que todas las imagenes son del mismo tamaño
         result=(images.get(0).getWidth()/Args.nTiles)+" "+(images.get(0).getHeight()/Args.nTiles)+"#"+result;

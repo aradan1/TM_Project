@@ -74,7 +74,7 @@ public class Filtres {
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
         BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-        int bUp = (boundary-1)/2;
+        int bUp = (boundary)/2;
         int bDown = (boundary)/2;
         for(int y =0; y< image.getHeight(); y++){
             for(int x =0; x< image.getWidth(); x++){
