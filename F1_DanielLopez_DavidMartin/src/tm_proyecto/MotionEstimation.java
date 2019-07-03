@@ -361,7 +361,7 @@ public class MotionEstimation {
             }
         }
         
-        return value;
+        return value/(image.getWidth()*image.getHeight());
     }
     
     public static Tessela minLargeDiamond(BufferedImage image, Tessela t, int seekRange){
