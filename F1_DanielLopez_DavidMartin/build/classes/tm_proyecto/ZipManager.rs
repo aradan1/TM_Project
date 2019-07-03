@@ -1,2 +1,0 @@
-tm_proyecto.ZipManager
-tm_proyecto.ZipData
