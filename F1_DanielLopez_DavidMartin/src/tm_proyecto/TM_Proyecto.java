@@ -44,9 +44,11 @@ class Args {
     @Parameter(names={"--quality"})
     static int quality = 10;
     @Parameter(names={"--mode"})
-    static int mode = 0;
+    static int mode = 1;
     @Parameter(names={"--batch", "-b"})
     static boolean batch = false;
+    @Parameter(names={"--test", "-t"})
+    static boolean test = false;
     
 }
 
@@ -59,63 +61,95 @@ public class TM_Proyecto {
         Args args = new Args();
         JCommander.newBuilder().addObject(args).build().parse(argv);
         
-        System.out.printf("%s %s\n", Args.input, Args.output);
+        // este input mejor que no pueda ser modificado desde fuera, ya que cambiara en caso de querer hacer encode y decode del resultado
+        String input = Args.input;
+        ZipData data;
         
-        
-        try {
-            ZipData data = ZipManager.extractImagesZip(Args.input);
-           ArrayList<BufferedImage> images = data.getImages();
-           ArrayList<BufferedImage> output = new ArrayList<>();
-           for(BufferedImage image: images){
-               if(Args.binarization>-1)
-                   image = Filtres.binary(image, Args.binarization);
-               if(Args.negative)
-                   image = Filtres.negative(image);
-               if(Args.averaging>0)
-                   image = Filtres.averaging(image, Args.averaging);
-               
-               output.add(image);
-           }
+         try {
            
-           // Imagenes sin comprimir directas en jpg
-           ZipManager.imagesToZip(output, "",  "test_no_encoded.zip");
-           System.out.println("Saved to test_no_encoded.zip");
-           System.out.printf("%.3f MB\n",new File("test_no_encoded.zip").length()/1000000f);
-           
-           
-           String meta=MotionEstimation.motionEncode(output);
-           
-           
-           
+           long startTime = System.currentTimeMillis();
            
            if(Args.encode){
+               // descomprimimos las imagenes
+                data = ZipManager.extractImagesZip(input);
+                ArrayList<BufferedImage> images = data.getImages();
+                ArrayList<BufferedImage> output = new ArrayList<>();
+                for(BufferedImage image: images){
+                    // aplicamos el banco de filtros a las imagenes recuperadas
+                    if(Args.binarization>-1)
+                        image = Filtres.binary(image, Args.binarization);
+                    if(Args.negative)
+                        image = Filtres.negative(image);
+                    if(Args.averaging>0)
+                        image = Filtres.averaging(image, Args.averaging);
 
+                    output.add(image);
+                }
+                   
+                if(!Args.test){
+                    // ******** Only for testing **********
+                    // Imagenes sin comprimir directas en jpg
+                    System.out.println();
+                    ZipManager.imagesToZip(output, "",  "test_no_encoded.zip");
+                    System.out.println("Saved to test_no_encoded.zip");
+                    System.out.printf("%.3f MB\n",new File("test_no_encoded.zip").length()/1000000f);
+                    System.out.println();
+                    // ************************************
+                }
+                   
+                // encontramos las teselas que nos podemos ahorrar y las anotamos en el string
+                String meta=MotionEstimation.motionEncode(output);
+                // las guardamos en un zip y mostramos su tamaño
+                ZipManager.imagesToZip(output, meta, Args.output);
+                System.out.println();
+                System.out.println("Saved to "+Args.output);
+                System.out.printf("%.3f MB\n", new File(Args.output).length()/1000000f);
+                System.out.println();
+                
+                if(!Args.batch){
+                    // thread reproductor del encode
+                    Thread t1 = new Thread(new Reproductor(output, Args.fps));
+                    t1.start();
+                    //Reproductor.reproducirImagenes(output, Args.fps);
+               }
+                
+                // por si se elige la opcion encode+decode
+                input = Args.output;
            
            }
+           
+           
+           
            
            if(Args.decode){
+               // cargamos las imagenes y el fichero de metadatos
+                data = ZipManager.extractImagesZip(input);
+                // recuperamos la imagen original
+                MotionEstimation.motionDecode(data.getImages(), data.getMetadata());
+                System.out.println();
+                
+                if(!Args.batch){
+                    // thread del reproductor del decode
+                    Thread t2 = new Thread(new Reproductor(data.getImages(), Args.fps));
+                    t2.start();
+                    //Reproductor.reproducirImagenes(data.getImages(), Args.fps);
+               }
                
-               
+                if(!Args.test){
+                    // ******** Only for testing **********
+                    // guardamos el resultado del decode en un zip
+                    ZipManager.imagesToZip(data.getImages(), data.getMetadata(), "decoded.zip");
+                    // ************************************
+                }
            }
            
-           if(!Args.batch){
-                Reproductor.reproducirImagenes(output, Args.fps);
-           }
            
-           
-           
-           ZipManager.imagesToZip(output, meta, "test_encoded.zip");
-           System.out.println("Saved to test_encoded.zip");
-           
-           System.out.printf("%.3f MB\n", new File("test_encoded.zip").length()/1000000f);
-           
-           data = ZipManager.extractImagesZip("test_encoded.zip");
-           System.out.println(data.getMetadata().equals(meta));
-            
-           MotionEstimation.motionDecode(data.getImages(), data.getMetadata());
-           Reproductor.reproducirImagenes(data.getImages(), Args.fps);
-           
-           ZipManager.imagesToZip(data.getImages(), data.getMetadata(), "decoded.zip");
+           // contamos el tiempo transcurrido de inicio a fin de la ejecucion
+           long endTime = System.currentTimeMillis();
+           long duration = (endTime - startTime)/1000;//    /1000 para pasar de milis a segundos
+           int seconds = (int) (duration) % 60;
+           int minutes = (int) (duration / 60);
+            System.out.printf("Timpo transcurrido: %02d min %02d sec\n", minutes, seconds);
            
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

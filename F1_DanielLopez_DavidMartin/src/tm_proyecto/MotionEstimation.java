@@ -82,11 +82,14 @@ public class MotionEstimation {
        int i = 0;
        c = metadata.charAt(i);
        
+       // valores por defecto para detectar errores
        int width=-1;
        int height=-1;
        String temp="";
        
-       while(c != '#'){
+       // extraemos el ancho y alto de las teselas
+       while(i<metadata.length() && c != '#'){
+           // primer espacio delimita el ancho
            if(c == ' '){
                width=Integer.parseInt(temp);
                temp = "";
@@ -96,16 +99,16 @@ public class MotionEstimation {
            i++;
            c=metadata.charAt(i);
        }
+       // #delimita el ultimo campo, que es altura
        height = Integer.parseInt(temp);
        
-       
-       // donde se copia
+       // donde se copia la tesela (valor por defecto)
        Pair copy = new Pair(0,0);
        
-       // donde se pega
+       // donde se pega la tesela (valor por defecto)
        Pair paste = new Pair(0,0);
        
-       if(width == -1 || height == -1){
+       if(width == -1 || height == -1){// si ha habido un error salimos
            System.out.println("Error: "+width+"x"+height);
            return ;
        }
@@ -116,7 +119,15 @@ public class MotionEstimation {
        int page=1;
        
         i++;
-       // hay que leer el string char a char y recrear las imagenes originales, despues pasarle un filtro de suavizado (near average)
+       // hay que leer el string char a char y recrear las imagenes originales
+       /*
+       primeros dos valores son punto superior izquierdo de la tesela a reconstruir,
+       los otros dos son el punto superior izquiero de donde copiamos la tesela en la imagen anterior
+       Formato: (1r valor)a(2o valor)b(3r valor)c(4o valor)d     ej:1a22b33c4d
+       esto se puede repetir tantas veces como teselas
+       '#' indica cambio de imagen
+       
+       */
        while(i < metadata.length() && page<images.size()){
            
             c=metadata.charAt(i);
@@ -124,7 +135,7 @@ public class MotionEstimation {
            // Siguiente pagina
             if(c=='#'){
                 //images.set(page, Filtres.averaging(images.get(page), 2));
-                System.out.println("Image "+page+" decoded");
+                System.out.print("\rImage "+page+" decoded");
                 page++;
             }
             // 1r valor, x de la tesela cambiada
@@ -163,19 +174,20 @@ public class MotionEstimation {
         
         String result="";
         
-        
+        // recorremos las imagenes hacia atras
         for(int i = images.size()-1; i>0; i--){
             String temp = "#";
-            if(i%Args.GOP != 0){
+            if(i%Args.GOP != 0){ // las imagenes multiples del GOP no las queremos codificadas
                 temp=blockSearch(images.get(i), images.get(i-1), Args.quality, Args.nTiles, Args.seekRange, Args.mode)+temp;
-                System.out.println("Image "+i+" encoded");
+                System.out.print("\rImage "+i+" encoded                                    ");
             }
-                // estructura: num image+info tessela
+                // info tesselas de la imagen + info imagenes anteriores anteriores
                 result=""+temp+result;
                      
         }
         
         // Asumimos que todas las imagenes son del mismo tamaño
+        // ponemos el ancho y alto usado al principio del string
         result=(images.get(0).getWidth()/Args.nTiles)+" "+(images.get(0).getHeight()/Args.nTiles)+"#"+result;
         
         return result;
@@ -183,25 +195,24 @@ public class MotionEstimation {
     
     
     public static String blockSearch(BufferedImage image, BufferedImage reference, int threshold, int numtiles, int seekRange, int mode){
-        /*
-        ColorModel cm = image.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-        WritableRaster raster = image.copyData(null);
-        BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-        */
+        
         String temp;
         String dades = "";
+        // ancho de las teselas
         int tileW= (image.getWidth())/numtiles;
+        // alto de las teselas
         int tileH= (image.getHeight())/numtiles;
+        
+        // para cada tesela encontramos su parecido si hay
         for(int x=0; x+tileW< image.getWidth()+1; x+=tileW){
             for(int y=0; y+tileH< image.getHeight()+1; y+=tileH){
                 
-                if(mode==1){
+                if(mode==1){ // modo diamante
                         temp = motionEstimationDiam(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
-                }else{
+                }else{ // modo full
                         temp = motionEstimation(image.getSubimage(x,y,tileW,tileH), reference, threshold, new Tessela(new Pair(x,y), tileW, tileH), seekRange);
                 }
-                
+                // si hay coincidencia repintamos la tesela con la media de sus colores
                 if(!temp.isEmpty()){
                     int tR=0;
                     int tB=0;
@@ -226,7 +237,6 @@ public class MotionEstimation {
                     tA/=(tileW*tileH);
                     
                     int p= (tA<<24) | (tR<<16) | (tG<<8) | tB;
-                    //int p= (tA<<24) | (255<<16) | (255<<8) | 255;
                     
                     for(int j =y; j< y+tileH; j++){
                         for(int i =x; i< x+tileW; i++){
@@ -234,7 +244,7 @@ public class MotionEstimation {
                         }
                     }
                 }
-                
+                // ponemos la informacion de la tesela en el string a devolver
                 dades+=temp;
             }
         }
@@ -266,10 +276,12 @@ public class MotionEstimation {
     private static String motionEstimationDiam(BufferedImage tile, BufferedImage reference, int threshold, Tessela coords, int seekRange){
         String result = "";
         Tessela prev = coords;
-        seekRange=2;
+        //seekRange=2;
         Tessela temp;
         // Compute large diamond
-        while ((seekRange % 2) == 0){
+        
+        //while ((seekRange % 2) == 0){
+        while(seekRange>1){
             temp = minLargeDiamond(tile, prev, seekRange);
             while(!prev.equals(temp)){
                 prev = temp;
@@ -358,10 +370,13 @@ public class MotionEstimation {
         BufferedImage temp = null;
         int calc;
         Tessela tesTemp;
+        // seekrange = numero de teselas de distancia
         int sx = seekRange*t.w;
         int sy = seekRange*t.h;
+        
         // X+2S Y
         tesTemp = new Tessela(new Pair(t.p.x+2*sx, t.p.y), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -370,6 +385,7 @@ public class MotionEstimation {
 
         // X-2S Y
         tesTemp = new Tessela(new Pair(t.p.x-2*sx, t.p.y), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -379,6 +395,7 @@ public class MotionEstimation {
 
         // X Y+2S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y+2*sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -387,6 +404,7 @@ public class MotionEstimation {
 
         // X Y-2S
         tesTemp = new Tessela(new Pair(t.p.x, t.p.y-2*sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -395,6 +413,7 @@ public class MotionEstimation {
 
         // X+S Y+S
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y+sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -403,6 +422,7 @@ public class MotionEstimation {
 
         // X-S Y-S
         tesTemp = new Tessela(new Pair(t.p.x-sx, t.p.y-sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -411,6 +431,7 @@ public class MotionEstimation {
 
         // X-S Y+S
         tesTemp = new Tessela(new Pair(t.p.x-sx, t.p.y+sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
@@ -419,12 +440,14 @@ public class MotionEstimation {
 
         // X+S Y-S
         tesTemp = new Tessela(new Pair(t.p.x+sx, t.p.y-sy), t.w, t.h);
+        // si la tesela esta dentro de los margenes de la imagen
         if (tesTemp.p.y >= 0 && tesTemp.p.x >= 0 && tesTemp.p.x*t.w <= image.getWidth() && tesTemp.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(tesTemp.p.x, tesTemp.p.y, tesTemp.w, tesTemp.h);
             calc = tilesMatch(image, temp);
             largeDiamond.put(tesTemp, calc);
         }
         // Center xy as first min value
+        // si la tesela esta dentro de los margenes de la imagen
         if (t.p.y >= 0 && t.p.x >= 0 && t.p.x*t.w <= image.getWidth() && t.p.y*t.h <= image.getHeight()){
             temp = image.getSubimage(t.p.x, t.p.y, t.w, t.h);
             calc = tilesMatch(image, temp);
