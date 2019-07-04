@@ -18,6 +18,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -45,6 +46,31 @@ class ZipData{
     
 }
 
+class ZipImage implements Comparable<ZipImage>{
+
+
+    private BufferedImage image;
+    private String name;
+    
+    public ZipImage(BufferedImage image, String name) {
+        this.image = image;
+        this.name = name;
+    }
+    
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public int compareTo(ZipImage t) {
+        return this.name.compareTo(t.name);
+    }
+}
+
 /**
  *
  * Clase que administra la creación y lectura de archivos zip
@@ -60,7 +86,7 @@ public class ZipManager {
      */
     public static ZipData extractImagesZip(String zip) throws FileNotFoundException, IOException{
 
-        ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
+        ArrayList<ZipImage> imagesZip = new ArrayList<ZipImage>();
         File metadatos = null;
         FileInputStream fileInputStream = new FileInputStream(zip);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
@@ -81,12 +107,20 @@ public class ZipManager {
                 if(image == null){ // Si no ha creado la imagen es que son los metadatos
                     metadatos = file;
                 }else{
-                    images.add(image);  // Si ha creado la imagen la añadimos
+                    imagesZip.add(new ZipImage(image, ze.getName() ) );
                 }
         }
+        
         zin.close();
         bufferedInputStream.close();
         fileInputStream.close();
+        
+        Collections.sort(imagesZip);
+        ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
+        
+        for(int i = 0; i< imagesZip.size(); i++ ){
+            images.add(imagesZip.get(i).getImage());
+        }
         
         if(metadatos==null){
             return new ZipData(images,"") ;
@@ -155,7 +189,11 @@ public class ZipManager {
                 int i = 0;
                 for(BufferedImage image : images){     
                     // Para cada imagen crea un zip entry i lo pone como next entry para añadirlo al zip
-                    zos.putNextEntry(new ZipEntry(i+".jpeg"));
+                    if(i<10){
+                        zos.putNextEntry(new ZipEntry("0"+i+".jpeg"));
+                    }else{
+                        zos.putNextEntry(new ZipEntry(i+".jpeg"));
+                    }
                     ImageIO.write(image, "jpeg", zos);  // Usamos la libreria ImageIO para escribir la imagen
                     
                     zos.closeEntry();

@@ -17,13 +17,16 @@ public class Visor extends JFrame {
 
         private BufferedImage imagen;
         private JPanel contentPane;
-        private JLabel lblImageHolder;
+        private JLabel lb1ImageHolder;
+        private JLabel lb2ImageHolder;
 
         public Visor() {
                 this.contentPane = new JPanel();
                 this.setContentPane(contentPane);
-                lblImageHolder = new JLabel("Image Holder");
-                contentPane.add(lblImageHolder, BorderLayout.CENTER);
+                lb1ImageHolder = new JLabel("");
+                contentPane.add(lb1ImageHolder, BorderLayout.WEST);
+                lb2ImageHolder = new JLabel("");
+                contentPane.add(lb2ImageHolder, BorderLayout.EAST);
 
         }
 
@@ -33,9 +36,12 @@ public class Visor extends JFrame {
         public void changeFrame(){
 
                 if (imagen != null) {
-                        ImageIcon icono = new ImageIcon((Image) imagen);
-                        lblImageHolder.setIcon(icono);
-                        this.setSize(icono.getIconWidth(), icono.getIconHeight());
+                        ImageIcon icono1 = new ImageIcon((Image) imagen);
+                        lb1ImageHolder.setIcon(icono1);
+                        this.setSize(icono1.getIconWidth(), icono1.getIconHeight());
+                        ImageIcon icono2 = new ImageIcon((Image) imagen);
+                        lb2ImageHolder.setIcon(icono2);
+                        this.setSize(icono2.getIconWidth(), icono2.getIconHeight());
                 }
                 this.show();
         }
