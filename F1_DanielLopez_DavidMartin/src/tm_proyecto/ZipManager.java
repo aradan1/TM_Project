@@ -18,7 +18,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -85,8 +86,10 @@ public class ZipManager {
      * @throws IOException 
      */
     public static ZipData extractImagesZip(String zip) throws FileNotFoundException, IOException{
-
-        ArrayList<ZipImage> imagesZip = new ArrayList<ZipImage>();
+        
+        Map<String, BufferedImage> images = new TreeMap<>();
+        String name;
+        //ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
         File metadatos = null;
         FileInputStream fileInputStream = new FileInputStream(zip);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
@@ -94,6 +97,7 @@ public class ZipManager {
         ZipEntry ze = null;
         // Por cada item del zip
         while ((ze = zin.getNextEntry()) != null) {
+                name = ze.getName();
                 File file = File.createTempFile("tmp","");
                 OutputStream out = new FileOutputStream(file);
                 byte[] buffer = new byte[9000];
@@ -107,25 +111,21 @@ public class ZipManager {
                 if(image == null){ // Si no ha creado la imagen es que son los metadatos
                     metadatos = file;
                 }else{
-                    imagesZip.add(new ZipImage(image, ze.getName() ) );
+                    images.put(name, image);
+                    //images.add(image);  // Si ha creado la imagen la añadimos
                 }
+                
         }
         
         zin.close();
         bufferedInputStream.close();
         fileInputStream.close();
-        
-        Collections.sort(imagesZip);
-        ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
-        
-        for(int i = 0; i< imagesZip.size(); i++ ){
-            images.add(imagesZip.get(i).getImage());
-        }
+        ArrayList<BufferedImage> sortedImages = new ArrayList<BufferedImage>(images.values());
         
         if(metadatos==null){
-            return new ZipData(images,"") ;
+            return new ZipData(sortedImages,"") ;
         }
-        return new ZipData(images,stringFromFile(metadatos)) ;
+        return new ZipData(sortedImages,stringFromFile(metadatos)) ;
     }
 
 

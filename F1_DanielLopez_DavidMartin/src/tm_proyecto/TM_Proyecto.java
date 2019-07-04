@@ -22,7 +22,7 @@ class Args {
    @Parameter(names={"--input", "-i"}, required = true)
     static String input;
     @Parameter(names={"--output", "-o"})
-    static String output = "output.xdxd";
+    static String output = "output";
     @Parameter(names={"--encode", "-e"})
     static boolean encode = false;
     @Parameter(names={"--decode", "-d"})
@@ -36,9 +36,9 @@ class Args {
     @Parameter(names={"--averaging"})
     static int averaging = -1;
     @Parameter(names={"--nTiles"})
-    static int nTiles=20;
+    static int nTiles= 20;
     @Parameter(names={"--seekRange"})
-    static int seekRange =1;
+    static int seekRange = 1;
     @Parameter(names={"--GOP"})
     static int GOP = 5;
     @Parameter(names={"--quality"})
@@ -64,6 +64,7 @@ public class TM_Proyecto {
         // este input mejor que no pueda ser modificado desde fuera, ya que cambiara en caso de querer hacer encode y decode del resultado
         String input = Args.input;
         ZipData data;
+        String outputString = Args.output+".xdxd";
         
          try {
            
@@ -100,10 +101,10 @@ public class TM_Proyecto {
                 // encontramos las teselas que nos podemos ahorrar y las anotamos en el string
                 String meta=MotionEstimation.motionEncode(output);
                 // las guardamos en un zip y mostramos su tamaño
-                ZipManager.imagesToZip(output, meta, Args.output);
+                ZipManager.imagesToZip(output, meta, outputString);
                 System.out.println();
-                System.out.println("Saved to "+Args.output);
-                System.out.printf("%.3f MB\n", new File(Args.output).length()/1000000f);
+                System.out.println("Saved to "+outputString);
+                System.out.printf("%.3f MB\n", new File(outputString).length()/1000000f);
                 System.out.println();
                 
                 if(!Args.batch){
@@ -114,7 +115,7 @@ public class TM_Proyecto {
                }
                 
                 // por si se elige la opcion encode+decode
-                input = Args.output;
+                input = outputString;
            
            }
            
